@@ -221,7 +221,6 @@ class auditd (
   String[1]                               $action_mail_acct         = 'root',
   Variant[Integer[0],Pattern['^\d+%$']]   $admin_space_left         = 50,
   Auditd::SpaceLeftAction                 $admin_space_left_action  = 'rotate',
-  Boolean                                 $at_boot                  = true,
   Integer[0]                              $buffer_size              = 16384,
   Integer[1,600000]                       $backlog_wait_time        = 60000,
   Auditd::DiskErrorAction                 $disk_error_action        = 'syslog',
@@ -304,15 +303,6 @@ class auditd (
       $_write_logs = $write_logs
     }
 
-    # This is done here so that the kernel option can be properly removed if
-    # auditing is to be disabled on the system.
-    if $at_boot {
-      $_grub_enable = true
-    }
-    else {
-      $_grub_enable = false
-    }
-
     include 'auditd::install'
     include 'auditd::config'
 
@@ -320,17 +310,5 @@ class auditd (
     -> Class['auditd::config']
     ~> Class['auditd::service']
     -> Class['auditd']
-
-    Class['auditd::install'] -> Class['::auditd::config::grub']
-
   }
-  else {
-    $_grub_enable = false
-  }
-
-  # This is done deliberately so that you cannot conflict a direct call to
-  # auditd::config::grub with an include somewhere else. auditd::config::grub
-  # would normally be a private class but may be used independently if
-  # necessary.
-  class { 'auditd::config::grub': enable => $_grub_enable }
 }
