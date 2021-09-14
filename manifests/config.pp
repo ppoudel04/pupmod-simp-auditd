@@ -4,7 +4,9 @@
 #
 # @author https://github.com/simp/pupmod-simp-auditd/graphs/contributors
 #
-class auditd::config {
+class auditd::config (
+  $purge_rules = true,
+  ) {
   assert_private()
 
   if $auditd::default_audit_profile != undef {
@@ -30,7 +32,7 @@ class auditd::config {
     group   => $auditd::log_group,
     mode    => $log_file_mode,
     recurse => true,
-    purge   => true
+    purge   => $purge_rules
   }
 
   file { '/etc/audit/rules.d':
